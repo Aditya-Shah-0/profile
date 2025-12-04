@@ -46,12 +46,31 @@ const Projects = () => {
                                     {project.description}
                                 </p>
 
-                                <div className="flex flex-wrap gap-2 mt-auto">
+                                <div className="flex flex-wrap gap-2 mb-6">
                                     {project.tech.map((tech, tIdx) => (
                                         <span key={tIdx} className="text-xs font-mono text-accent bg-accent/10 px-2 py-1 rounded">
                                             {tech}
                                         </span>
                                     ))}
+                                </div>
+
+                                <div className="flex gap-4 mt-auto">
+                                    <a
+                                        href={project.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-6 py-2 bg-accent hover:bg-primary text-white rounded-full font-medium transition-colors duration-300 transform hover:-translate-y-1 shadow-lg shadow-accent/25 text-sm"
+                                    >
+                                        View Code
+                                    </a>
+                                    <a
+                                        href={project.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-6 py-2 border border-white/20 hover:bg-white/10 text-white rounded-full font-medium transition-all duration-300 transform hover:-translate-y-1 text-sm flex items-center gap-2"
+                                    >
+                                        Live Preview <FaExternalLinkAlt size={12} />
+                                    </a>
                                 </div>
                             </div>
 

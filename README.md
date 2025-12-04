@@ -2,8 +2,6 @@
 
 A modern, elegant, and fully responsive personal portfolio website built with **React**, **Tailwind CSS**, and **Framer Motion**.
 
-![Portfolio Preview](./src/assets/profile.png)
-
 ## 🚀 Features
 
 - **Premium Design**: "Midnight Violet" dark theme with glassmorphism and glowing effects.

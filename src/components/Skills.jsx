@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { profile } from '../data/profile';
 import {
     FaJava, FaPython, FaHtml5, FaJs, FaReact, FaNodeJs, FaBootstrap, FaDatabase, FaMicrochip
@@ -8,136 +8,91 @@ import {
     SiCplusplus, SiArduino, SiMongodb, SiExpress, SiTailwindcss, SiFirebase, SiNextdotjs, SiC
 } from 'react-icons/si';
 
-// Mapping skill names to icons
-const skillIcons = {
-    "C": <SiC />,
-    "C++": <SiCplusplus />,
-    "Java": <FaJava />,
-    "Python": <FaPython />,
-    "HTML": <FaHtml5 />,
-    "JavaScript": <FaJs />,
-    "Arduino": <SiArduino />,
-    "ESP32": <FaMicrochip />,
-    "React.js": <FaReact />,
-    "Next.js": <SiNextdotjs />,
-    "MongoDB": <SiMongodb />,
-    "Express.js": <SiExpress />,
-    "Bootstrap": <FaBootstrap />,
-    "Node.js": <FaNodeJs />,
-    "Tailwind CSS": <SiTailwindcss />,
-    "Firebase": <SiFirebase />,
-    // Default icon for others
-    "default": <FaDatabase />
+// Mapping skill names to icons and colors
+const skillData = {
+    "C": { icon: <SiC />, color: "#A8B9CC" },
+    "C++": { icon: <SiCplusplus />, color: "#00599C" },
+    "Java": { icon: <FaJava />, color: "#007396" },
+    "Python": { icon: <FaPython />, color: "#3776AB" },
+    "HTML": { icon: <FaHtml5 />, color: "#E34F26" },
+    "JavaScript": { icon: <FaJs />, color: "#F7DF1E" },
+    "Arduino": { icon: <SiArduino />, color: "#00979D" },
+    "ESP32": { icon: <FaMicrochip />, color: "#E60012" }, // Generic chip color
+    "React.js": { icon: <FaReact />, color: "#61DAFB" },
+    "Next.js": { icon: <SiNextdotjs />, color: "#000000" }, // White on dark
+    "MongoDB": { icon: <SiMongodb />, color: "#47A248" },
+    "Express.js": { icon: <SiExpress />, color: "#000000" }, // White on dark
+    "Bootstrap": { icon: <FaBootstrap />, color: "#7952B3" },
+    "Node.js": { icon: <FaNodeJs />, color: "#339933" },
+    "Tailwind CSS": { icon: <SiTailwindcss />, color: "#06B6D4" },
+    "Firebase": { icon: <SiFirebase />, color: "#FFCA28" },
+    "default": { icon: <FaDatabase />, color: "#8b5cf6" }
 };
 
-const SkillCard = ({ skill }) => {
-    const icon = skillIcons[skill] || skillIcons["default"];
+const SkillBubble = ({ skill, index }) => {
+    const { icon, color } = skillData[skill] || skillData["default"];
+
+    // Deterministic initial position for "gathering" effect based on index
+    // This avoids impure Math.random() calls during render
+    const initialX = ((index % 5) - 2) * 100; // Spread across -200 to 200
+    const initialY = ((index % 3) - 1) * 100; // Spread across -100 to 100
 
     return (
-        <div className="flex items-center space-x-2 bg-white/5 border border-white/10 px-6 py-4 rounded-xl backdrop-blur-sm hover:bg-white/10 hover:border-accent/50 transition-all duration-300 group min-w-[180px] justify-center">
-            <span className="text-2xl text-gray-400 group-hover:text-accent transition-colors">{icon}</span>
-            <span className="text-gray-200 font-medium whitespace-nowrap">{skill}</span>
-        </div>
-    );
-};
-
-const ParallaxText = ({ children, baseVelocity = 100 }) => {
-    const baseX = useRef(0);
-    const { scrollY } = useScroll();
-    const scrollVelocity = useTransform(scrollY, [0, 1000], [0, 5], { clamp: false });
-    const x = useTransform(scrollY, (v) => `${baseVelocity * (v / 1000)}%`);
-
-    // We can use a simpler approach for the "scroll down it happen" effect
-    // Just mapping scrollY to x position directly
-    const xMove = useTransform(scrollY, [0, 3000], [0, baseVelocity * 5]);
-
-    return (
-        <div className="overflow-hidden m-0 whitespace-nowrap flex flex-nowrap">
-            <motion.div
-                className="flex flex-nowrap gap-8 py-4"
-                style={{ x: xMove }}
-            >
-                {children}
-                {children} {/* Duplicate for seamless feel if needed, though simple scroll is requested */}
-            </motion.div>
-        </div>
+        <motion.div
+            initial={{ opacity: 0, x: initialX, y: initialY, scale: 0 }}
+            whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            viewport={{ once: false, margin: "-100px" }} // Re-animates when scrolling in/out
+            transition={{
+                type: "spring",
+                stiffness: 75,
+                damping: 10,
+                delay: index * 0.05
+            }}
+            whileHover={{ scale: 1.1, zIndex: 10 }}
+            className="flex flex-col items-center justify-center p-4 bg-white/5 backdrop-blur-md rounded-full w-24 h-24 md:w-28 md:h-28 border border-white/10 shadow-lg cursor-pointer group"
+        >
+            <div className="text-3xl md:text-4xl mb-2 transition-transform duration-300 group-hover:rotate-12" style={{ color: color === "#000000" ? "#ffffff" : color }}>
+                {icon}
+            </div>
+            <span className="text-xs text-gray-300 font-medium text-center leading-tight">{skill}</span>
+        </motion.div>
     );
 };
 
 const Skills = () => {
-    // Flatten skills for the rows
     const allSkills = [
         ...profile.skills.languages,
         ...profile.skills.technologies,
         ...profile.skills.concepts
     ];
 
-    // Split into 3 rows
-    const row1 = allSkills.slice(0, Math.ceil(allSkills.length / 3));
-    const row2 = allSkills.slice(Math.ceil(allSkills.length / 3), Math.ceil(allSkills.length * 2 / 3));
-    const row3 = allSkills.slice(Math.ceil(allSkills.length * 2 / 3));
-
-    const containerRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end start"]
-    });
-
-    const x1 = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
-    const x2 = useTransform(scrollYProgress, [0, 1], ["20%", "-20%"]);
-    const x3 = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
+    // Remove duplicates
+    const uniqueSkills = [...new Set(allSkills)];
 
     return (
-        <section id="skills" className="py-20 bg-dark relative overflow-hidden" ref={containerRef}>
+        <section id="skills" className="py-20 bg-dark relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none"></div>
 
-            <div className="container mx-auto px-6 relative z-10 mb-12">
+            <div className="container mx-auto px-6 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
-                    className="text-center"
+                    className="text-center mb-16"
                 >
                     <h2 className="text-3xl md:text-4xl font-bold font-heading text-white mb-4">
                         Technical <span className="text-gradient">Arsenal</span>
                     </h2>
                     <div className="w-20 h-1 bg-accent mx-auto rounded-full"></div>
                 </motion.div>
-            </div>
 
-            <div className="flex flex-col gap-8 overflow-hidden py-10">
-                {/* Row 1 - Left to Right */}
-                <motion.div style={{ x: x1 }} className="flex gap-6 w-max px-4">
-                    {row1.map((skill, idx) => (
-                        <SkillCard key={`r1-${idx}`} skill={skill} />
+                <div className="flex flex-wrap justify-center gap-6 max-w-5xl mx-auto perspective-1000">
+                    {uniqueSkills.map((skill, index) => (
+                        <SkillBubble key={index} skill={skill} index={index} />
                     ))}
-                    {/* Duplicate for length */}
-                    {row1.map((skill, idx) => (
-                        <SkillCard key={`r1-dup-${idx}`} skill={skill} />
-                    ))}
-                </motion.div>
-
-                {/* Row 2 - Right to Left */}
-                <motion.div style={{ x: x2 }} className="flex gap-6 w-max px-4 self-end">
-                    {row2.map((skill, idx) => (
-                        <SkillCard key={`r2-${idx}`} skill={skill} />
-                    ))}
-                    {row2.map((skill, idx) => (
-                        <SkillCard key={`r2-dup-${idx}`} skill={skill} />
-                    ))}
-                </motion.div>
-
-                {/* Row 3 - Left to Right */}
-                <motion.div style={{ x: x3 }} className="flex gap-6 w-max px-4">
-                    {row3.map((skill, idx) => (
-                        <SkillCard key={`r3-${idx}`} skill={skill} />
-                    ))}
-                    {row3.map((skill, idx) => (
-                        <SkillCard key={`r3-dup-${idx}`} skill={skill} />
-                    ))}
-                </motion.div>
+                </div>
             </div>
         </section>
     );
